@@ -1,3 +1,29 @@
-#index:
-#    path: /
-#    controller: App\Controller\DefaultController::index
+api_main:
+  path: /
+  controller: App\Controller\AssetController::index
+  methods: GET
+
+api_list:
+  path: /assets
+  controller: App\Controller\AssetController::list
+  methods: GET
+
+api_create:
+  path: /assets/create
+  controller: App\Controller\AssetController::create
+  methods: POST
+
+api_get:
+  path: /assets/{uid}
+  controller: App\Controller\AssetController::getOne
+  methods: GET
+
+api_update:
+  path: /assets/update/{uid}
+  controller: App\Controller\AssetController::update
+  methods: PUT
+
+api_delete:
+  path: /assets/delete/{uid}
+  controller: App\Controller\AssetController::delete
+  methods: DELETE
