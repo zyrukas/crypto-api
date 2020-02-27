@@ -20,8 +20,6 @@ services:
     networks:
       - crypto-net
     tty: true
-    depends_on:
-      - crypto-nginx
 
   crypto-nginx:
     image: nginx:latest

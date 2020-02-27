@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Serializer;
+namespace App\Serializer\Normalizer;
 
 use App\Entity\Asset;
 use App\Service\CurrencyExchanger;
@@ -30,28 +30,13 @@ class AssetNormalizer implements ContextAwareNormalizerInterface
     }
 
     /**
-     * @param mixed       $objects
+     * @param Asset       $asset
      * @param string|null $format
      * @param array       $context
      *
      * @return array
      */
-    public function normalize($objects, string $format = null, array $context = []): array
-    {
-        $data = [];
-        foreach ($objects as $object) {
-            $data[] = $this->normalizeAsset($object);
-        }
-
-        return $data;
-    }
-
-    /**
-     * @param Asset $asset
-     *
-     * @return array
-     */
-    public function normalizeAsset(Asset $asset): array
+    public function normalize($asset, string $format = null, array $context = []): array
     {
         return [
             'uid' => $asset->getUid(),

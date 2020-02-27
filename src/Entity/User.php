@@ -3,13 +3,15 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
-use Doctrine\ORM\PersistentCollection;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
-class User
+class User implements UserInterface
 {
+    public const ROLE_USER = 'ROLE_USER';
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -18,19 +20,19 @@ class User
     private int $id;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=180, unique=true)
      */
-    private string $username;
+    private string $email;
 
     /**
-     * @ORM\Column(type="string", length=32)
+     * @ORM\Column(type="json")
      */
-    private string $token;
+    private array $roles = [];
 
     /**
-     * @ORM\OneToMany(targetEntity="App\Entity\Asset", mappedBy="user")
+     * @ORM\Column(type="string", unique=true, nullable=true, length=32)
      */
-    private PersistentCollection $assets;
+    private string $apiToken;
 
     /**
      * @return int
@@ -41,13 +43,21 @@ class User
     }
 
     /**
-     * @param int $id
+     * @return string
+     */
+    public function getEmail(): string
+    {
+        return $this->email;
+    }
+
+    /**
+     * @param string $email
      *
      * @return self
      */
-    public function setId(int $id): self
+    public function setEmail(string $email): self
     {
-        $this->id = $id;
+        $this->email = $email;
 
         return $this;
     }
@@ -57,17 +67,25 @@ class User
      */
     public function getUsername(): string
     {
-        return $this->username;
+        return (string) $this->email;
     }
 
     /**
-     * @param string $username
+     * @return array
+     */
+    public function getRoles(): array
+    {
+        return $this->roles;
+    }
+
+    /**
+     * @param array $roles
      *
      * @return self
      */
-    public function setUsername(string $username): self
+    public function setRoles(array $roles): self
     {
-        $this->username = $username;
+        $this->roles = $roles;
 
         return $this;
     }
@@ -75,40 +93,42 @@ class User
     /**
      * @return string
      */
-    public function getToken(): string
+    public function getPassword(): string
     {
-        return $this->token;
+        return (string) $this->apiToken;
     }
 
     /**
-     * @param string $token
+     * @return string
+     */
+    public function getApiToken(): string
+    {
+        return $this->apiToken;
+    }
+
+    /**
+     * @param string $apiToken
      *
      * @return self
      */
-    public function setToken(string $token): self
+    public function setApiToken(string $apiToken): self
     {
-        $this->token = $token;
+        $this->apiToken = $apiToken;
 
         return $this;
     }
 
     /**
-     * @return PersistentCollection
+     * @return void
      */
-    public function getAssets(): PersistentCollection
+    public function getSalt(): void
     {
-        return $this->assets;
     }
 
     /**
-     * @param PersistentCollection $assets
-     *
-     * @return self
+     * @return void
      */
-    public function setAssets(PersistentCollection $assets): self
+    public function eraseCredentials(): void
     {
-        $this->assets = $assets;
-
-        return $this;
     }
 }

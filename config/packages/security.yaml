@@ -1,0 +1,25 @@
+security:
+  encoders:
+    App\Entity\User:
+      algorithm: auto
+
+  providers:
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
+
+  firewalls:
+    main:
+      anonymous: lazy
+      logout: ~
+      provider: app_user_provider
+
+      guard:
+        authenticators:
+          - App\Security\TokenAuthenticator
+
+      stateless: true
+
+  access_control:
+    - { path: ^/, roles: ROLE_USER }

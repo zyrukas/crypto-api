@@ -3,8 +3,8 @@
 namespace App\Manager;
 
 use App\Entity\Asset;
-use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -31,12 +31,12 @@ class AssetManager
     }
 
     /**
-     * @param User  $user
-     * @param array $data
+     * @param UserInterface $user
+     * @param array         $data
      *
      * @return Asset
      */
-    public function create(User $user, array $data): Asset
+    public function create(UserInterface $user, array $data): Asset
     {
         return (new Asset())
             ->setUser($user)

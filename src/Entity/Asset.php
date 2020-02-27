@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
@@ -13,15 +14,11 @@ class Asset
     public const AVAILABLE_CURRENCIES = ['BTC', 'ETH', 'IOTA'];
 
     /**
-     * !!! Important !!!
-     * Must be nullable because of PHP 7.4.2
-     * https://github.com/doctrine/orm/issues/7999
-     *
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private ?int $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="string", length=32, nullable=true)
@@ -63,7 +60,7 @@ class Asset
     /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="assets", cascade={"persist"})
      */
-    private User $user;
+    private UserInterface $user;
 
     /**
      * @return int|null
@@ -166,19 +163,19 @@ class Asset
     }
 
     /**
-     * @return User
+     * @return UserInterface
      */
-    public function getUser(): User
+    public function getUser(): UserInterface
     {
         return $this->user;
     }
 
     /**
-     * @param User $user
+     * @param UserInterface $user
      *
-     * @return self
+     * @return $this
      */
-    public function setUser(User $user): self
+    public function setUser(UserInterface $user): self
     {
         $this->user = $user;
 

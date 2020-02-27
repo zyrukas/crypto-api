@@ -2,15 +2,16 @@
 
 namespace App\Controller;
 
+use App\Entity\Asset;
+use App\Exception\JsonResponseException;
 use App\Manager\AssetManager;
 use App\Repository\AssetRepository;
-use App\Serializer\AssetNormalizer;
-use App\Service\UserAuthenticator;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
-class AssetController extends AbstractController
+class AssetController extends ApiController
 {
     /**
      * @return JsonResponse
@@ -21,61 +22,34 @@ class AssetController extends AbstractController
     }
 
     /**
-     * @param Request           $request
-     * @param UserAuthenticator $userAuthenticator
-     * @param AssetManager      $assetManager
+     * @param Request      $request
+     * @param AssetManager $assetManager
      *
      * @return JsonResponse
      */
-    public function create(
-        Request $request,
-        UserAuthenticator $userAuthenticator,
-        AssetManager $assetManager
-    ): JsonResponse {
-        if (!$user = $userAuthenticator->authenticate($request->query->get('token'))) {
-            return $this->json(['message' => 'Invalid token.']);
-        }
+    public function create(Request $request, AssetManager $assetManager): JsonResponse
+    {
+        $asset = $assetManager->create($this->getUser(), $this->getDecodedJsonRequest($request));
 
-        if (!$data = \json_decode($request->getContent(), true)) {
-            return $this->json(['message' => 'Invalid json.']);
-        }
-
-        try {
-            $asset = $assetManager->create($user, $data);
-        } catch (\Throwable $throwable) {
-            return $this->json(['message' => 'Invalid json. Probably the types or missing fields.']);
-        }
-
-        $errors = $assetManager->validate($asset);
-        if (!empty($errors)) {
-            return $this->json(['message' => $errors]);
-        }
-
+        $this->validateAsset($assetManager, $asset);
         $assetManager->save($asset);
 
-        return $this->json([
-            'message' => 'Successfully created. UID: ' . $asset->getUid(),
-        ]);
+        return $this->json(['message' => 'Successfully created. UID: ' . $asset->getUid()], Response::HTTP_CREATED);
     }
 
     /**
-     * @param Request           $request
-     * @param UserAuthenticator $userAuthenticator
-     * @param AssetRepository   $assetRepository
-     * @param AssetNormalizer   $assetNormalizer
+     * @param AssetRepository     $assetRepository
+     * @param NormalizerInterface $normalizer
      *
      * @return JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
-    public function list(
-        Request $request,
-        UserAuthenticator $userAuthenticator,
-        AssetRepository $assetRepository,
-        AssetNormalizer $assetNormalizer
-    ): JsonResponse {
-        if (!$user = $userAuthenticator->authenticate($request->query->get('token'))) {
-            return $this->json(['message' => 'Invalid token.']);
+    public function list(AssetRepository $assetRepository, NormalizerInterface $normalizer): JsonResponse
+    {
+        $assets = [];
+        foreach ($assetRepository->findBy(['user' => $this->getUser()]) as $asset) {
+            $assets[] = $normalizer->normalize($asset);
         }
-        $assets = $assetNormalizer->normalize($assetRepository->findBy(['user' => $user]));
 
         return $this->json([
             'totalMoneyInUSD' => \array_sum(\array_column($assets, 'valueInUSD')),
@@ -84,96 +58,95 @@ class AssetController extends AbstractController
     }
 
     /**
-     * @param string            $uid
-     * @param Request           $request
-     * @param UserAuthenticator $userAuthenticator
-     * @param AssetRepository   $assetRepository
-     * @param AssetNormalizer   $assetNormalizer
+     * @param string              $uid
+     * @param AssetRepository     $assetRepository
+     * @param NormalizerInterface $normalizer
      *
      * @return JsonResponse
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function getOne(
         string $uid,
-        Request $request,
-        UserAuthenticator $userAuthenticator,
         AssetRepository $assetRepository,
-        AssetNormalizer $assetNormalizer
+        NormalizerInterface $normalizer
     ): JsonResponse {
-        if (!$user = $userAuthenticator->authenticate($request->query->get('token'))) {
-            return $this->json(['message' => 'Invalid token.']);
-        }
-
-        if (!$asset = $assetRepository->findOneBy(['user' => $user, 'uid' => $uid])) {
-            return $this->json(['message' => 'Asset not found.']);
-        }
-
-        return $this->json($assetNormalizer->normalizeAsset($asset));
+        return $this->json(
+            $normalizer->normalize(
+                $this->getAsset($assetRepository, $uid)
+            )
+        );
     }
 
     /**
-     * @param string            $uid
-     * @param Request           $request
-     * @param UserAuthenticator $userAuthenticator
-     * @param AssetRepository   $assetRepository
-     * @param AssetManager      $assetManager
+     * @param string          $uid
+     * @param AssetRepository $assetRepository
+     * @param AssetManager    $assetManager
      *
      * @return JsonResponse
      */
     public function delete(
         string $uid,
-        Request $request,
-        UserAuthenticator $userAuthenticator,
         AssetRepository $assetRepository,
         AssetManager $assetManager
     ): JsonResponse {
-        if (!$user = $userAuthenticator->authenticate($request->query->get('token'))) {
-            return $this->json(['message' => 'Invalid token.']);
-        }
-
-        if (!$asset = $assetRepository->findOneBy(['user' => $user, 'uid' => $uid])) {
-            return $this->json(['message' => 'Asset not found.']);
-        }
-        $assetManager->delete($asset);
+        $assetManager->delete(
+            $this->getAsset($assetRepository, $uid)
+        );
 
         return $this->json(['message' => 'Successfully deleted.']);
     }
 
     /**
-     * @param string            $uid
-     * @param Request           $request
-     * @param UserAuthenticator $userAuthenticator
-     * @param AssetRepository   $assetRepository
-     * @param AssetManager      $assetManager
+     * @param string          $uid
+     * @param Request         $request
+     * @param AssetRepository $assetRepository
+     * @param AssetManager    $assetManager
      *
      * @return JsonResponse
      */
     public function update(
         string $uid,
         Request $request,
-        UserAuthenticator $userAuthenticator,
         AssetRepository $assetRepository,
         AssetManager $assetManager
     ): JsonResponse {
-        if (!$user = $userAuthenticator->authenticate($request->query->get('token'))) {
-            return $this->json(['message' => 'Invalid token.']);
-        }
+        $asset = $this->getAsset($assetRepository, $uid);
+        $asset = $assetManager->update($asset, $this->getDecodedJsonRequest($request));
 
-        if (!$data = \json_decode($request->getContent(), true)) {
-            return $this->json(['message' => 'Invalid json.']);
-        }
-
-        if (!$asset = $assetRepository->findOneBy(['user' => $user, 'uid' => $uid])) {
-            return $this->json(['message' => 'Asset not found.']);
-        }
-
-        $asset = $assetManager->update($asset, $data);
-
-        $errors = $assetManager->validate($asset);
-        if (!empty($errors)) {
-            return $this->json(['message' => $errors]);
-        }
+        $this->validateAsset($assetManager, $asset);
         $assetManager->save($asset);
 
         return $this->json(['message' => 'Successfully updated.']);
+    }
+
+    /**
+     * @param AssetManager $assetManager
+     * @param Asset        $asset
+     *
+     * @return void
+     */
+    private function validateAsset(AssetManager $assetManager, Asset $asset): void
+    {
+        $errors = $assetManager->validate($asset);
+        if (!empty($errors)) {
+            throw (new JsonResponseException(Response::HTTP_BAD_REQUEST, 'errors'))->setMessages($errors);
+        }
+    }
+
+    /**
+     * @param AssetRepository $assetRepository
+     * @param string          $uid
+     *
+     * @return Asset
+     */
+    private function getAsset(AssetRepository $assetRepository, string $uid): Asset
+    {
+        $asset = $assetRepository->findOneBy(['user' => $this->getUser(), 'uid' => $uid]);
+
+        if ($asset === null) {
+            throw new JsonResponseException(404, 'Asset not found.');
+        }
+
+        return $asset;
     }
 }

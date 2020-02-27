@@ -29,3 +29,9 @@ services:
   App\Service\CurrencyExchanger:
     arguments:
       $cache: '@currencies_pool'
+
+  App\Serializer\Normalizer\AssetNormalizer:
+    tags: ['serializer.normalizer']
+
+  App\EventListener\ResponseExceptionSubscriber:
+    tags: ['kernel.event_subscriber']
