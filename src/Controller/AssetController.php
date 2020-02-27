@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Asset;
 use App\Manager\AssetManager;
 use App\Repository\AssetRepository;
 use App\Serializer\AssetNormalizer;
@@ -10,11 +9,7 @@ use App\Service\UserAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
 
-/**
- * @Route("/asset")
- */
 class AssetController extends AbstractController
 {
     /**
@@ -22,9 +17,7 @@ class AssetController extends AbstractController
      */
     public function index(): JsonResponse
     {
-        return $this->json([
-            'availableCurrencies' => Asset::AVAILABLE_CURRENCIES,
-        ]);
+        return $this->json([]);
     }
 
     /**
