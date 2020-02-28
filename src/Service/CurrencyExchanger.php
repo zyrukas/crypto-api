@@ -46,8 +46,7 @@ class CurrencyExchanger
         if (!$currenciesItem->isHit()) {
             $currencies = [];
             foreach (Asset::AVAILABLE_CURRENCIES as $availableCurrency) {
-                $jsonData = \file_get_contents(self::API_URL . \strtolower($availableCurrency) . '-usd');
-                $data = \json_decode($jsonData, true);
+                $data = \json_decode($this->getJsonFromApi($availableCurrency), true);
 
                 $currencies[$data['ticker']['base']] = [
                     'base' => $data['ticker']['base'],
@@ -61,5 +60,15 @@ class CurrencyExchanger
         }
 
         return $currenciesItem->get();
+    }
+
+    /**
+     * @param string $availableCurrency
+     *
+     * @return string
+     */
+    private function getJsonFromApi(string $availableCurrency): string
+    {
+        return \file_get_contents(self::API_URL . \strtolower($availableCurrency) . '-usd');
     }
 }

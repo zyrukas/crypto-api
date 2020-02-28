@@ -107,7 +107,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null): JsonResponse
     {
-        $data = ['message' => 'Authentication Required'];
+        $data = ['message' => 'Authentication Required.'];
 
         return new JsonResponse($data, Response::HTTP_UNAUTHORIZED);
     }

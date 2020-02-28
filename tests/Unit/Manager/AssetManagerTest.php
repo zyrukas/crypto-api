@@ -10,6 +10,7 @@ use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\ConstraintViolation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class AssetManagerTest extends TestCase
@@ -46,7 +47,7 @@ class AssetManagerTest extends TestCase
     public function testCreate(Asset $expected, array $data): void
     {
         $assetManager = $this->getAssetManager();
-        $newAsset = $assetManager->create($this->getUser(), $data);
+        $newAsset = $assetManager->create(new User(), $data);
         $newAsset->setUid(null);
 
         $this->assertEquals($expected, $newAsset);
@@ -62,7 +63,7 @@ class AssetManagerTest extends TestCase
                 ->setLabel('binance')
                 ->setCurrency('BTC')
                 ->setValue(2.0)
-                ->setUser($this->getUser()),
+                ->setUser(new User()),
             [
                 'label' => 'binance',
                 'currency' => 'BTC',
@@ -113,6 +114,44 @@ class AssetManagerTest extends TestCase
     }
 
     /**
+     * @param Asset $asset
+     * @param array $expect
+     * @param array $errors
+     *
+     * @return void
+     *
+     * @dataProvider validateDataProvider
+     */
+    public function testValidate(Asset $asset, array $expect, array $errors): void
+    {
+        $this->validator->expects('validate')->once()->andReturn($expect);
+        $this->assertEquals($this->getAssetManager()->validate($asset), $errors);
+    }
+
+    /**
+     * @return \Generator
+     */
+    public function validateDataProvider(): \Generator
+    {
+        yield [
+            (new Asset())
+                ->setLabel('binance')
+                ->setCurrency('BTC')
+                ->setValue(3.0),
+            [],
+            [],
+        ];
+        yield [
+            (new Asset())
+                ->setLabel('binance')
+                ->setCurrency('EUR')
+                ->setValue(3.0),
+            [new ConstraintViolation('This currency is not available.', null, [], '', 'currency', 'currency')],
+            ['currency' => 'This currency is not available.'],
+        ];
+    }
+
+    /**
      * @return \Generator
      */
     public function updateDataProvider(): \Generator
@@ -144,14 +183,6 @@ class AssetManagerTest extends TestCase
                 'currency' => 'BTC',
             ],
         ];
-    }
-
-    /**
-     * @return User
-     */
-    private function getUser(): User
-    {
-        return new User();
     }
 
     /**
