@@ -1,7 +1,0 @@
-framework:
-  cache:
-    pools:
-      currencies_pool:
-        adapter: cache.adapter.filesystem
-        public: true
-        default_lifetime: 600

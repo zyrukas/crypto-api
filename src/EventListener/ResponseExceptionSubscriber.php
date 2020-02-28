@@ -31,7 +31,7 @@ class ResponseExceptionSubscriber implements EventSubscriberInterface
             $statusCode = Response::HTTP_BAD_REQUEST;
         }
 
-        $response = (new JsonResponse($responseArray, $statusCode));
+        $response = new JsonResponse($responseArray, $statusCode);
         $response->headers->set('Content-Type', 'application/problem+json');
         $event->setResponse($response);
     }
