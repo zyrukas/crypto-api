@@ -2,13 +2,26 @@
 
 namespace App\Service;
 
+use App\Client\APIClientInterface;
 use App\Entity\Asset;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\CacheItem;
 
-class CurrencyExchanger
+class CurrencyExchanger implements CurrencyExchangerInterface
 {
     private const API_URL = 'https://api.cryptonator.com/api/ticker/';
     private const CACHE_KEY = 'currencies';
+    private const EXPIRE_AFTER_SECONDS = 60;
+
+    /**
+     * @var APIClientInterface
+     */
+    private APIClientInterface $client;
+
+    /**
+     * @var FilesystemAdapter
+     */
+    private FilesystemAdapter $filesystemAdapter;
 
     /**
      * @var array
@@ -16,10 +29,15 @@ class CurrencyExchanger
     private array $currencyRates;
 
     /**
+     * @param APIClientInterface $client
+     * @param FilesystemAdapter  $filesystemAdapter
+     *
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function __construct()
+    public function __construct(APIClientInterface $client, FilesystemAdapter $filesystemAdapter)
     {
+        $this->client = $client;
+        $this->filesystemAdapter = $filesystemAdapter;
         $this->currencyRates = $this->getCurrencyRates();
     }
 
@@ -40,8 +58,9 @@ class CurrencyExchanger
      */
     private function getCurrencyRates(): array
     {
-        $cachePool = new FilesystemAdapter('', 60);
-        $currenciesItem = $cachePool->getItem(self::CACHE_KEY);
+        /** @var CacheItem $currenciesItem */
+        $currenciesItem = $this->filesystemAdapter->getItem(self::CACHE_KEY);
+        $currenciesItem->expiresAfter(self::EXPIRE_AFTER_SECONDS);
 
         if (!$currenciesItem->isHit()) {
             $currencies = [];
@@ -56,7 +75,7 @@ class CurrencyExchanger
             }
 
             $currenciesItem->set($currencies);
-            $cachePool->save($currenciesItem);
+            $this->filesystemAdapter->save($currenciesItem);
         }
 
         return $currenciesItem->get();
@@ -69,6 +88,6 @@ class CurrencyExchanger
      */
     private function getJsonFromApi(string $availableCurrency): string
     {
-        return \file_get_contents(self::API_URL . \strtolower($availableCurrency) . '-usd');
+        return $this->client->get(self::API_URL . \strtolower($availableCurrency) . '-usd');
     }
 }

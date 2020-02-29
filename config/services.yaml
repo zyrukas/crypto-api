@@ -31,3 +31,7 @@ services:
 
   App\EventListener\ResponseExceptionSubscriber:
     tags: ['kernel.event_subscriber']
+
+  App\Service\CurrencyExchanger:
+    arguments:
+      $filesystemAdapter: '@cache.app'

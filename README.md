@@ -1,16 +1,6 @@
 crypto-portfolio-api
 ==============
 
-### FYI
-
-It's always possible to find something to improve in code.
-I could cover more code with tests, improve authentication and CRUD, create fixtures for users, create docker registry so you don't have to build containers, use travis for github, .env parameters with CI and so on, but I believe it's enough for job application.
-If you insist more improvements, let me know.
-
-### Issues
-* https://github.com/doctrine/orm/issues/7999 
-  So I solved it with nullable id for asset.
-
 ### To start project use following commands:
 ```sh
 $ docker-compose build

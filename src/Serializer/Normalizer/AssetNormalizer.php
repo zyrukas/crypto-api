@@ -3,7 +3,7 @@
 namespace App\Serializer\Normalizer;
 
 use App\Entity\Asset;
-use App\Service\CurrencyExchanger;
+use App\Service\CurrencyExchangerInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
@@ -15,15 +15,15 @@ class AssetNormalizer implements ContextAwareNormalizerInterface
     private ObjectNormalizer $normalizer;
 
     /**
-     * @var CurrencyExchanger
+     * @var CurrencyExchangerInterface
      */
-    private CurrencyExchanger $currencyExchanger;
+    private CurrencyExchangerInterface $currencyExchanger;
 
     /**
-     * @param ObjectNormalizer  $normalizer
-     * @param CurrencyExchanger $currencyExchanger
+     * @param ObjectNormalizer           $normalizer
+     * @param CurrencyExchangerInterface $currencyExchanger
      */
-    public function __construct(ObjectNormalizer $normalizer, CurrencyExchanger $currencyExchanger)
+    public function __construct(ObjectNormalizer $normalizer, CurrencyExchangerInterface $currencyExchanger)
     {
         $this->normalizer = $normalizer;
         $this->currencyExchanger = $currencyExchanger;
