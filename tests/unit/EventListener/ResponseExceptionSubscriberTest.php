@@ -31,6 +31,7 @@ class ResponseExceptionSubscriberTest extends TestCase
 
         $this->assertInstanceOf(ResponseExceptionSubscriber::class, $responseSubscriber);
 
+        $appEnvTemp = $_ENV['APP_ENV'];
         $_ENV['APP_ENV'] = 'dev';
         $responseSubscriber->onKernelException(new ExceptionEvent( // final class, can't mock.
             Mockery::mock(HttpKernelInterface::class),
@@ -38,8 +39,8 @@ class ResponseExceptionSubscriberTest extends TestCase
             HttpKernelInterface::MASTER_REQUEST,
             $exception
         ));
+        $_ENV['APP_ENV'] = $appEnvTemp;
 
-        $_ENV['APP_ENV'] = 'test';
         $responseSubscriber->onKernelException(new ExceptionEvent( // final class, can't mock.
             Mockery::mock(HttpKernelInterface::class),
             Mockery::mock(Request::class),
