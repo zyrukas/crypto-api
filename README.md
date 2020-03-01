@@ -13,6 +13,8 @@ $ docker-compose exec crypto-php bin/console doctrine:fixtures:load
 
 Server should be reachable at http://127.0.0.1:8000
 
+Auth token generated from fixtures
+X-AUTH-TOKEN: 6c4d3cbb569fa002d525b2302d4cf546
 
 ### Create asset
 
