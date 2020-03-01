@@ -51,16 +51,14 @@ class Asset
     private float $value;
 
     /**
-     * @Assert\Positive
-     *
-     * @ORM\Column(type="decimal", precision=21, scale=2, options={"unsigned" = true}, nullable=true)
-     */
-    private ?float $valueInUSD = null;
-
-    /**
      * @ORM\ManyToOne(targetEntity="App\Entity\User", inversedBy="assets", cascade={"persist"})
      */
     private UserInterface $user;
+
+    /**
+     * @var float|null
+     */
+    private ?float $valueInDefaultCurrency = null;
 
     /**
      * @return int|null
@@ -185,19 +183,19 @@ class Asset
     /**
      * @return float|null
      */
-    public function getValueInUSD(): ?float
+    public function getValueInDefaultCurrency(): ?float
     {
-        return $this->valueInUSD;
+        return $this->valueInDefaultCurrency;
     }
 
     /**
-     * @param float|null $valueInUSD
+     * @param float|null $valueInDefaultCurrency
      *
      * @return self
      */
-    public function setValueInUSD(?float $valueInUSD): self
+    public function setValueInDefaultCurrency(?float $valueInDefaultCurrency): self
     {
-        $this->valueInUSD = $valueInUSD;
+        $this->valueInDefaultCurrency = $valueInDefaultCurrency;
 
         return $this;
     }

@@ -10,5 +10,5 @@ interface CurrencyExchangerInterface
      *
      * @return float
      */
-    public function convertToUSD(string $currency, float $value): float;
+    public function convertToDefaultCurrency(string $currency, float $value): float;
 }

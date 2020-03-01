@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Adapter\AssetPricesAdapter;
 use App\Entity\Asset;
 use App\Exception\JsonResponseException;
 use App\Manager\AssetManager;
@@ -40,19 +41,26 @@ class AssetController extends ApiController
     /**
      * @param AssetRepository     $assetRepository
      * @param NormalizerInterface $normalizer
+     * @param AssetPricesAdapter  $assetPricesAdapter
      *
      * @return JsonResponse
+     * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
-    public function list(AssetRepository $assetRepository, NormalizerInterface $normalizer): JsonResponse
-    {
+    public function list(
+        AssetRepository $assetRepository,
+        NormalizerInterface $normalizer,
+        AssetPricesAdapter $assetPricesAdapter
+    ): JsonResponse {
         $assets = [];
         foreach ($assetRepository->findBy(['user' => $this->getUser()]) as $asset) {
-            $assets[] = $normalizer->normalize($asset);
+            $assets[] = $normalizer->normalize($assetPricesAdapter->adapt($asset));
         }
 
         return $this->json([
-            'totalMoneyInUSD' => \array_sum(\array_column($assets, 'valueInUSD')),
+            $this->getParameter('default_currency') => \array_sum(
+                \array_column($assets, 'defaultCurrency')
+            ),
             'assets' => $assets,
         ]);
     }

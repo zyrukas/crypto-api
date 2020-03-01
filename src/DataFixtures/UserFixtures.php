@@ -20,7 +20,7 @@ class UserFixtures extends Fixture
         $user = (new User())
             ->setEmail('demo+' . \microtime(true) . '@example.com')
             ->setRoles([User::ROLE_USER])
-            ->setApiToken(\md5(\uniqid()));
+            ->setApiToken('6c4d3cbb569fa002d525b2302d4cf546');
         $manager->persist($user);
 
         $asset = (new Asset())

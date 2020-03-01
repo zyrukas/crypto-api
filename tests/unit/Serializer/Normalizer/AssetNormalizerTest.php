@@ -5,7 +5,6 @@ namespace App\Tests\Unit\Serializer\Normalizer;
 use App\Entity\Asset;
 use App\Entity\User;
 use App\Serializer\Normalizer\AssetNormalizer;
-use App\Service\CurrencyExchanger;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
@@ -22,17 +21,11 @@ class AssetNormalizerTest extends TestCase
     private $normalizer;
 
     /**
-     * @var CurrencyExchanger|MockInterface
-     */
-    private $currencyExchanger;
-
-    /**
      * @return void
      */
     protected function setUp(): void
     {
         $this->normalizer = Mockery::mock(ObjectNormalizer::class);
-        $this->currencyExchanger = Mockery::mock(CurrencyExchanger::class);
     }
 
     /**
@@ -45,8 +38,6 @@ class AssetNormalizerTest extends TestCase
      */
     public function testNormalize(Asset $asset, array $expect): void
     {
-        $this->currencyExchanger->expects('convertToUSD')->once();
-
         $assetNormalizer = $this->getAssetNormalizer();
 
         $this->assertTrue($assetNormalizer->supportsNormalization($asset));
@@ -69,7 +60,7 @@ class AssetNormalizerTest extends TestCase
                 'label' => 'binance',
                 'currency' => 'BTC',
                 'value' => 2.0,
-                'valueInUSD' => 0.0,
+                'defaultCurrency' => null,
             ],
         ];
     }
@@ -79,9 +70,6 @@ class AssetNormalizerTest extends TestCase
      */
     private function getAssetNormalizer(): AssetNormalizer
     {
-        return new AssetNormalizer(
-            $this->normalizer,
-            $this->currencyExchanger
-        );
+        return new AssetNormalizer($this->normalizer);
     }
 }

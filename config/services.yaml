@@ -4,6 +4,8 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
 parameters:
+  default_currency: 'USD'
+  default_currency_label: 'valueInUSD'
 
 services:
   # default configuration for services in *this* file
@@ -32,6 +34,7 @@ services:
   App\EventListener\ResponseExceptionSubscriber:
     tags: ['kernel.event_subscriber']
 
-  App\Service\CurrencyExchanger:
+  App\Service\CurrencyRetriever:
     arguments:
       $filesystemAdapter: '@cache.app'
+      $defaultCurrency: '%default_currency%'
