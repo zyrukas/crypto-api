@@ -18,14 +18,14 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
     /**
      * @var EntityManagerInterface
      */
-    private EntityManagerInterface $em;
+    private EntityManagerInterface $entityManager;
 
     /**
-     * @param EntityManagerInterface $em
+     * @param EntityManagerInterface $entityManager
      */
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $this->em = $em;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -60,7 +60,7 @@ class TokenAuthenticator extends AbstractGuardAuthenticator
             return null;
         }
 
-        return $this->em->getRepository(User::class)->findOneBy(['apiToken' => $credentials]);
+        return $this->entityManager->getRepository(User::class)->findOneBy(['apiToken' => $credentials]);
     }
 
     /**
