@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Client\APIClientInterface;
 use App\Entity\Asset;
-use App\Model\Cryptonator\Response;
+use App\Model\ThirdParty\Cryptonator\Response;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\CacheItem;
 use Symfony\Component\Serializer\SerializerInterface;

@@ -4,11 +4,13 @@ namespace App\Tests\Unit\Adapter;
 
 use App\Adapter\AssetPricesAdapter;
 use App\Entity\Asset;
+use App\Model\Asset\Value;
 use App\Service\CurrencyExchanger;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
 use PHPUnit\Framework\TestCase;
+use App\Model\Asset\Asset as AssetModel;
 
 class AssetPricesAdapterTest extends TestCase
 {
@@ -28,15 +30,15 @@ class AssetPricesAdapterTest extends TestCase
     }
 
     /**
-     * @param Asset $expect
-     * @param Asset $provide
+     * @param AssetModel $expect
+     * @param Asset      $provide
      *
      * @dataProvider adaptDataProvider
      *
      * @return void
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function testAdapt(Asset $expect, Asset $provide): void
+    public function testAdapt(AssetModel $expect, Asset $provide): void
     {
         $this->currencyExchanger->expects('convertToDefaultCurrency')->once()->andReturn(1000);
 
@@ -51,12 +53,21 @@ class AssetPricesAdapterTest extends TestCase
     public function adaptDataProvider(): \Generator
     {
         yield [
+            (new AssetModel())
+                ->setUid('123')
+                ->setLabel('binance')
+                ->setBaseValue(
+                    (new Value())
+                        ->setCurrency('BTC')
+                        ->setAmount(2.0)
+                )
+                ->setValue((new Value())
+                    ->setCurrency('USD')
+                    ->setAmount(1000.0)),
             (new Asset())
-                ->setValue(2.0)
-                ->setCurrency('BTC')
-                ->setValueInDefaultCurrency(1000.0),
-            (new Asset())
-                ->setValue(2.0)
+                ->setUid('123')
+                ->setLabel('binance')
+                ->setAmount(2.0)
                 ->setCurrency('BTC'),
         ];
     }
@@ -66,6 +77,6 @@ class AssetPricesAdapterTest extends TestCase
      */
     private function getAssetPricesAdapter(): AssetPricesAdapter
     {
-        return new AssetPricesAdapter($this->currencyExchanger);
+        return new AssetPricesAdapter($this->currencyExchanger, 'USD');
     }
 }

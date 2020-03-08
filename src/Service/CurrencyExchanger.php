@@ -4,10 +4,17 @@ namespace App\Service;
 
 class CurrencyExchanger implements CurrencyExchangerInterface
 {
+    private const CURRENCY_PRECISION = 20;
+
     /**
      * @var CurrencyRetriever
      */
     private CurrencyRetriever $currencyRetriever;
+
+    /**
+     * @var array|null
+     */
+    private ?array $currencies = null;
 
     /**
      * @param CurrencyRetriever $currencyRetriever
@@ -26,6 +33,19 @@ class CurrencyExchanger implements CurrencyExchangerInterface
      */
     public function convertToDefaultCurrency(string $currency, float $value): float
     {
-        return \round($this->currencyRetriever->getCurrencies()[$currency]->getTicker()->getPrice() * $value, 20);
+        return \round($this->getCurrencies()[$currency]->getTicker()->getPrice() * $value, self::CURRENCY_PRECISION);
+    }
+
+    /**
+     * @return array
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function getCurrencies(): array
+    {
+        if ($this->currencies === null) {
+            $this->currencies = $this->currencyRetriever->getCurrencies();
+        }
+
+        return $this->currencies;
     }
 }

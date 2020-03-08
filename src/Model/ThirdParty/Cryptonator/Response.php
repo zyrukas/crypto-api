@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\Cryptonator;
+namespace App\Model\ThirdParty\Cryptonator;
 
 class Response
 {

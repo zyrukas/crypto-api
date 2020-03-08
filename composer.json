@@ -18,16 +18,17 @@
     "symfony/yaml": "5.0.*"
   },
   "require-dev": {
-    "mockery/mockery": "1.3.*",
-    "symfony/maker-bundle": "1.14.*",
+    "codeception/codeception": "4.1.*",
     "doctrine/doctrine-fixtures-bundle": "3.3.*",
-    "codeception/codeception": "4.1.*"
+    "mockery/mockery": "1.3.*",
+    "symfony/maker-bundle": "1.14.*"
   },
   "config": {
     "preferred-install": {
       "*": "dist"
     },
-    "sort-packages": true
+    "sort-packages": true,
+    "bin-dir": "bin"
   },
   "autoload": {
     "psr-4": {

@@ -62,7 +62,7 @@ class AssetManagerTest extends TestCase
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(2.0)
+                ->setAmount(2.0)
                 ->setUser(new User()),
             [
                 'label' => 'binance',
@@ -137,7 +137,7 @@ class AssetManagerTest extends TestCase
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(3.0),
+                ->setAmount(3.0),
             [],
             [],
         ];
@@ -145,7 +145,7 @@ class AssetManagerTest extends TestCase
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('EUR')
-                ->setValue(3.0),
+                ->setAmount(3.0),
             [new ConstraintViolation('This currency is not available.', null, [], '', 'currency', 'currency')],
             ['currency' => 'This currency is not available.'],
         ];
@@ -160,11 +160,11 @@ class AssetManagerTest extends TestCase
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(3.0),
+                ->setAmount(3.0),
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(2.0),
+                ->setAmount(2.0),
             [
                 'value' => 2.0,
             ],
@@ -173,11 +173,11 @@ class AssetManagerTest extends TestCase
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(3.0),
+                ->setAmount(3.0),
             (new Asset())
                 ->setLabel('binance')
                 ->setCurrency('BTC')
-                ->setValue(3.0),
+                ->setAmount(3.0),
             [
                 'label' => 'binance',
                 'currency' => 'BTC',

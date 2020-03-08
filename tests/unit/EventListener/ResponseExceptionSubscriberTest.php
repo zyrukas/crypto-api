@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 
 class ResponseExceptionSubscriberTest extends TestCase
@@ -43,6 +44,13 @@ class ResponseExceptionSubscriberTest extends TestCase
             Mockery::mock(Request::class),
             HttpKernelInterface::MASTER_REQUEST,
             $jsonException
+        ));
+
+        $responseSubscriber->onKernelException(new ExceptionEvent( // final class, can't mock.
+            Mockery::mock(HttpKernelInterface::class),
+            Mockery::mock(Request::class),
+            HttpKernelInterface::MASTER_REQUEST,
+            Mockery::mock(HttpException::class)
         ));
     }
 

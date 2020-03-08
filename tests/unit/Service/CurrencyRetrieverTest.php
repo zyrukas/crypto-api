@@ -3,8 +3,8 @@
 namespace App\Tests\Unit\Service;
 
 use App\Client\APIClientInterface;
-use App\Model\Cryptonator\Response;
-use App\Model\Cryptonator\ResponseTicker;
+use App\Model\ThirdParty\Cryptonator\Response;
+use App\Model\ThirdParty\Cryptonator\ResponseTicker;
 use App\Service\CurrencyRetriever;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;

@@ -27,7 +27,7 @@ class UserFixtures extends Fixture
             ->setUser($user)
             ->setLabel('binance')
             ->setCurrency(Asset::AVAILABLE_CURRENCIES[\array_rand(Asset::AVAILABLE_CURRENCIES)])
-            ->setValue(\random_int(1, 100))
+            ->setAmount(\random_int(1, 100))
             ->setUid(\md5(\uniqid()));
         $manager->persist($asset);
 

@@ -6,7 +6,10 @@ use App\Adapter\AssetPricesAdapter;
 use App\Entity\Asset;
 use App\Exception\JsonResponseException;
 use App\Manager\AssetManager;
+use App\Model\Response\CreatedResponse;
+use App\Model\Response\UpdatedResponse;
 use App\Repository\AssetRepository;
+use App\Wrapper\ListResponseWrapper;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,22 +26,50 @@ class AssetController extends ApiController
     }
 
     /**
-     * @param Request      $request
-     * @param AssetManager $assetManager
+     * @param Request             $request
+     * @param AssetManager        $assetManager
+     * @param AssetPricesAdapter  $assetPricesAdapter
+     * @param NormalizerInterface $normalizer
      *
      * @return JsonResponse
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
-    public function create(Request $request, AssetManager $assetManager): JsonResponse
-    {
+    public function create(
+        Request $request,
+        AssetManager $assetManager,
+        AssetPricesAdapter $assetPricesAdapter,
+        NormalizerInterface $normalizer
+    ): JsonResponse {
         $asset = $assetManager->create($this->getUser(), $this->getDecodedJsonRequest($request));
 
         $this->validateAsset($assetManager, $asset);
         $assetManager->save($asset);
 
-        return $this->json(['message' => 'Successfully created. UID: ' . $asset->getUid()], Response::HTTP_CREATED);
+        $response = (new CreatedResponse())->setAsset($assetPricesAdapter->adapt($asset));
+
+        return $this->json($normalizer->normalize($response), Response::HTTP_CREATED);
     }
 
     /**
+     * @param ListResponseWrapper $listResponseWrapper
+     * @param NormalizerInterface $normalizer
+     *
+     * @return JsonResponse
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
+     */
+    public function list(
+        ListResponseWrapper $listResponseWrapper,
+        NormalizerInterface $normalizer
+    ): JsonResponse {
+        $listResponse = $listResponseWrapper->wrap($this->getUser(), $this->getParameter('default_currency'));
+
+        return $this->json($normalizer->normalize($listResponse));
+    }
+
+    /**
+     * @param string              $uid
      * @param AssetRepository     $assetRepository
      * @param NormalizerInterface $normalizer
      * @param AssetPricesAdapter  $assetPricesAdapter
@@ -47,40 +78,17 @@ class AssetController extends ApiController
      * @throws \Psr\Cache\InvalidArgumentException
      * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
-    public function list(
+    public function getOne(
+        string $uid,
         AssetRepository $assetRepository,
         NormalizerInterface $normalizer,
         AssetPricesAdapter $assetPricesAdapter
     ): JsonResponse {
-        $assets = [];
-        foreach ($assetRepository->findBy(['user' => $this->getUser()]) as $asset) {
-            $assets[] = $normalizer->normalize($assetPricesAdapter->adapt($asset));
-        }
-
-        return $this->json([
-            $this->getParameter('default_currency') => \array_sum(
-                \array_column($assets, 'defaultCurrency')
-            ),
-            'assets' => $assets,
-        ]);
-    }
-
-    /**
-     * @param string              $uid
-     * @param AssetRepository     $assetRepository
-     * @param NormalizerInterface $normalizer
-     *
-     * @return JsonResponse
-     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
-     */
-    public function getOne(
-        string $uid,
-        AssetRepository $assetRepository,
-        NormalizerInterface $normalizer
-    ): JsonResponse {
         return $this->json(
             $normalizer->normalize(
-                $this->getAsset($assetRepository, $uid)
+                $assetPricesAdapter->adapt(
+                    $this->getAsset($assetRepository, $uid)
+                )
             )
         );
     }
@@ -105,18 +113,24 @@ class AssetController extends ApiController
     }
 
     /**
-     * @param string          $uid
-     * @param Request         $request
-     * @param AssetRepository $assetRepository
-     * @param AssetManager    $assetManager
+     * @param string              $uid
+     * @param Request             $request
+     * @param AssetRepository     $assetRepository
+     * @param AssetManager        $assetManager
+     * @param AssetPricesAdapter  $assetPricesAdapter
+     * @param NormalizerInterface $normalizer
      *
      * @return JsonResponse
+     * @throws \Psr\Cache\InvalidArgumentException
+     * @throws \Symfony\Component\Serializer\Exception\ExceptionInterface
      */
     public function update(
         string $uid,
         Request $request,
         AssetRepository $assetRepository,
-        AssetManager $assetManager
+        AssetManager $assetManager,
+        AssetPricesAdapter $assetPricesAdapter,
+        NormalizerInterface $normalizer
     ): JsonResponse {
         $asset = $this->getAsset($assetRepository, $uid);
         $asset = $assetManager->update($asset, $this->getDecodedJsonRequest($request));
@@ -124,7 +138,9 @@ class AssetController extends ApiController
         $this->validateAsset($assetManager, $asset);
         $assetManager->save($asset);
 
-        return $this->json(['message' => 'Successfully updated.']);
+        $response = (new UpdatedResponse())->setAsset($assetPricesAdapter->adapt($asset));
+
+        return $this->json($normalizer->normalize($response));
     }
 
     /**

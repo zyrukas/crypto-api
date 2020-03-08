@@ -42,7 +42,7 @@ class AssetManager
             ->setUser($user)
             ->setLabel($data['label'])
             ->setCurrency($data['currency'])
-            ->setValue($data['value'])
+            ->setAmount($data['value'])
             ->setUid(\md5(\uniqid()));
     }
 
@@ -83,7 +83,7 @@ class AssetManager
             $asset->setCurrency($data['currency']);
         }
         if (isset($data['value'])) {
-            $asset->setValue($data['value']);
+            $asset->setAmount($data['value']);
         }
 
         return $asset;

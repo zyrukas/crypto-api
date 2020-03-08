@@ -3,6 +3,8 @@
 namespace App\Adapter;
 
 use App\Entity\Asset;
+use App\Model\Asset\Asset as AssetModel;
+use App\Model\Asset\Value;
 use App\Service\CurrencyExchanger;
 
 class AssetPricesAdapter
@@ -13,23 +15,42 @@ class AssetPricesAdapter
     private CurrencyExchanger $currencyExchanger;
 
     /**
-     * @param CurrencyExchanger $currencyExchanger
+     * @var string
      */
-    public function __construct(CurrencyExchanger $currencyExchanger)
+    private string $defaultCurrency;
+
+    /**
+     * @param CurrencyExchanger $currencyExchanger
+     * @param string            $defaultCurrency
+     */
+    public function __construct(CurrencyExchanger $currencyExchanger, string $defaultCurrency)
     {
         $this->currencyExchanger = $currencyExchanger;
+        $this->defaultCurrency = $defaultCurrency;
     }
 
     /**
      * @param Asset $asset
      *
-     * @return Asset
+     * @return AssetModel
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function adapt(Asset $asset): Asset
+    public function adapt(Asset $asset): AssetModel
     {
-        return $asset->setValueInDefaultCurrency(
-            $this->currencyExchanger->convertToDefaultCurrency($asset->getCurrency(), $asset->getValue())
-        );
+        return (new AssetModel())
+            ->setUid($asset->getUid())
+            ->setLabel($asset->getLabel())
+            ->setBaseValue(
+                (new Value())
+                    ->setCurrency($asset->getCurrency())
+                    ->setAmount($asset->getAmount())
+            )
+            ->setValue(
+                (new Value())
+                    ->setCurrency($this->defaultCurrency)
+                    ->setAmount(
+                        $this->currencyExchanger->convertToDefaultCurrency($asset->getCurrency(), $asset->getAmount())
+                    )
+            );
     }
 }
